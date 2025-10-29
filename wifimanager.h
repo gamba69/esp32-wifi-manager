@@ -49,6 +49,7 @@ class WIFIMANAGER {
         String apMask; // Client network mask
         String apPdns; // Client primary DNS
         String apSdns; // Client secondary DNS
+        String apMqtt; // MQTT server for client
     };
     apCredentials_t apList[WIFIMANAGER_MAX_APS]; // Stored AP list
 
@@ -112,7 +113,7 @@ class WIFIMANAGER {
     void detachUI();
 
     // Add another AP to the list of known WIFIs
-    bool addWifi(String apName, String apPass, String apAddr, String apGate, String apMask, String apPdns, String apSdns, bool updateNVS = true);
+    bool addWifi(String apName, String apPass, String apAddr, String apGate, String apMask, String apPdns, String apSdns, String apMqtt, bool updateNVS = true);
 
     // Delete Wifi from apList by ID
     bool delWifi(uint8_t apId);
