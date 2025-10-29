@@ -113,7 +113,7 @@ class WIFIMANAGER {
     void detachUI();
 
     // Add another AP to the list of known WIFIs
-    bool addWifi(String apName, String apPass, bool updateNVS = true);
+    bool addWifi(String apName, String apPass, String apAddr, String apGate, String apMask, String apPdns, String apSdns, bool updateNVS = true);
 
     // Delete Wifi from apList by ID
     bool delWifi(uint8_t apId);
