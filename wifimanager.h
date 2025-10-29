@@ -4,12 +4,12 @@
  *
  * Licensed under CC BY-NC-SA 4.0
  * (Attribution-NonCommercial-ShareAlike 4.0 International)
-**/
+ **/
 #ifndef WIFIMANAGER_h
 #define WIFIMANAGER_h
 
 #ifndef WIFIMANAGER_MAX_APS
-#define WIFIMANAGER_MAX_APS 4   // Valid range is uint8_t
+#define WIFIMANAGER_MAX_APS 4 // Valid range is uint8_t
 #endif
 
 #ifndef CAPTIVEPORTAL_MAX_HANDLERS
@@ -17,53 +17,52 @@
 #endif
 
 #include <Arduino.h>
-#include <Preferences.h>
 #include <ESPAsyncWebServer.h>
+#include <Preferences.h>
 #include <WiFi.h>
 
-void wifiTask(void* param);
-
+void wifiTask(void *param);
 
 class WIFIMANAGER {
   private:
-    AsyncCallbackWebHandler * uiWebHandlers[2];
+    AsyncCallbackWebHandler *uiWebHandlers[2];
     uint8_t uiWebHandlerCount = 0;
-    AsyncCallbackWebHandler * apiWebHandlers[10];
+    AsyncCallbackWebHandler *apiWebHandlers[10];
     uint8_t apiWebHandlerCount = 0;
-    AsyncCallbackWebHandler * captivePortalWebHandlers[CAPTIVEPORTAL_MAX_HANDLERS];
+    AsyncCallbackWebHandler *captivePortalWebHandlers[CAPTIVEPORTAL_MAX_HANDLERS];
     uint8_t captivePortalWebHandlerCount = 0;
 
   protected:
-    AsyncWebServer * webServer;         // The Webserver to register routes on
+    AsyncWebServer *webServer; // The Webserver to register routes on
 
-    String apiPrefix = "/api/wifi";     // Prefix for all IP endpionts
-    String uiPrefix = "/wifi";          // Prefix for all UI endpionts
+    String apiPrefix = "/api/wifi"; // Prefix for all IP endpionts
+    String uiPrefix = "/wifi";      // Prefix for all UI endpionts
 
-    Preferences preferences;            // Used to store AP credentials to NVS
-    char * NVS;                         // Name used for NVS preferences
+    Preferences preferences; // Used to store AP credentials to NVS
+    char *NVS;               // Name used for NVS preferences
 
     struct apCredentials_t {
-      String apName;                    // Name of the AP SSID
-      String apPass;                    // Password if required to the AP
-      String apAddr;                    // Client IP address
-      String apGate;                    // Client gateway
-      String apMask;                    // Client network mask
-      String apPdns;                    // Client primary DNS
-      String apSdns;                    // Client secondary DNS
+        String apName; // Name of the AP SSID
+        String apPass; // Password if required to the AP
+        String apAddr; // Client IP address
+        String apGate; // Client gateway
+        String apMask; // Client network mask
+        String apPdns; // Client primary DNS
+        String apSdns; // Client secondary DNS
     };
-    apCredentials_t apList[WIFIMANAGER_MAX_APS];  // Stored AP list
+    apCredentials_t apList[WIFIMANAGER_MAX_APS]; // Stored AP list
 
-    uint8_t configuredSSIDs = 0;        // Number of stored SSIDs in the NVS
+    uint8_t configuredSSIDs = 0; // Number of stored SSIDs in the NVS
 
-    bool createFallbackAP = true;       // Create an AP for configuration if no other connection is available
+    bool createFallbackAP = true; // Create an AP for configuration if no other connection is available
 
-    uint64_t lastWifiCheckMillis = 0;   // Time of last Wifi health check
+    uint64_t lastWifiCheckMillis = 0;         // Time of last Wifi health check
     uint32_t intervalWifiCheckMillis = 15000; // Interval of the Wifi health checks
-    uint64_t startApTimeMillis = 0;     // Time when the AP was started
-    uint32_t timeoutApMillis = 120000;  // Timeout of an AP when no client is connected, if timeout reached rescan, tryconnect or createAP
+    uint64_t startApTimeMillis = 0;           // Time when the AP was started
+    uint32_t timeoutApMillis = 120000;        // Timeout of an AP when no client is connected, if timeout reached rescan, tryconnect or createAP
 
-    String softApName;                  // Name of the soft AP if created, default to ESP_XXXXXXXX if empty
-    String softApPass;                  // Password for the soft AP, default to no password (empty)
+    String softApName; // Name of the soft AP if created, default to ESP_XXXXXXXX if empty
+    String softApPass; // Password for the soft AP, default to no password (empty)
 
     wifi_power_t wifiTxPower = WIFI_POWER_19_5dBm;
 
@@ -72,7 +71,7 @@ class WIFIMANAGER {
 
     // Get id of the first non empty entry
     uint8_t getApEntry();
-    
+
     // Print a log message to Serial, can be overwritten
     virtual void logMessage(String msg);
 
@@ -88,7 +87,7 @@ class WIFIMANAGER {
     TaskHandle_t dnsTaskHandle;
     volatile bool dnsServerActive = false;
 
-    WIFIMANAGER(const char * ns = "wifimanager");
+    WIFIMANAGER(const char *ns = "wifimanager");
     virtual ~WIFIMANAGER();
 
     // If no known Wifi can't be found, create an AP but retry regulary
@@ -101,7 +100,7 @@ class WIFIMANAGER {
     void startBackgroundTask(String apName = "", String apPass = "");
 
     // Attach a webserver and register api routes
-    void attachWebServer(AsyncWebServer * srv);
+    void attachWebServer(AsyncWebServer *srv);
 
     // Detach the webserver and delete all routes
     void detachWebServer();
