@@ -1646,6 +1646,16 @@ void WIFIMANAGER::attachUI() {
             document.getElementById('apName').readOnly = !!apName;
             const passField = document.getElementById('apPass');
             passField.value = '';
+            const addrField = document.getElementById('apAddr');
+            addrField.value = '';
+            const gateField = document.getElementById('apGate');
+            gateField.value = '';
+            const maskField = document.getElementById('apMask');
+            maskField.value = '';
+            const pdnsField = document.getElementById('apPdns');
+            pdnsField.value = '';
+            const sdnsField = document.getElementById('apSdns');
+            sdnsField.value = '';
             
             // If it's an open network, show a hint and make password optional
             if (isOpen && apName) {
