@@ -618,6 +618,20 @@ bool WIFIMANAGER::tryConnectSpecific(uint8_t networkId) {
         stopSoftAP();
 
     setMode(WIFI_STA);
+    IPAddress address;
+    IPAddress gateway;
+    IPAddress netmask;
+    if (apList[networkId].apAddr.length() > 0 && address.fromString(apList[networkId].apAddr.c_str()) && apList[networkId].apGate.length() > 0 && gateway.fromString(apList[networkId].apGate.c_str()) && apList[networkId].apMask.length() > 0 && netmask.fromString(apList[networkId].apMask.c_str())) {
+        IPAddress primary;
+        IPAddress secondary;
+        if (apList[networkId].apPdns.length() > 0 && primary.fromString(apList[networkId].apPdns.c_str()) && apList[networkId].apSdns.length() > 0 && secondary.fromString(apList[networkId].apSdns.c_str())) {
+            WiFi.config(address, gateway, netmask, primary, secondary);
+        } else if (apList[networkId].apPdns.length() > 0 && primary.fromString(apList[networkId].apPdns.c_str())) {
+            WiFi.config(address, gateway, netmask, primary);
+        } else {
+            WiFi.config(address, gateway, netmask);
+        }
+    }
     WiFi.begin(apList[networkId].apName.c_str(), apList[networkId].apPass.c_str());
     WiFi.setTxPower(wifiTxPower);
     wl_status_t status = (wl_status_t)WiFi.waitForConnectResult(5000UL);
