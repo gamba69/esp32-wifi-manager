@@ -215,7 +215,8 @@ void WIFIMANAGER::clearApList() {
     apList[i].apAddr = "";
     apList[i].apGate = "";
     apList[i].apMask = "";
-    apList[i].apDnsP = "";
+    apList[i].apPdns = "";
+    apList[i].apSdns = "";
   }
 }
 
