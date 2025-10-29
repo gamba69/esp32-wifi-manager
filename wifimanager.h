@@ -45,6 +45,11 @@ class WIFIMANAGER {
     struct apCredentials_t {
       String apName;                    // Name of the AP SSID
       String apPass;                    // Password if required to the AP
+      String apAddr;                    // Client IP address
+      String apGate;                    // Client gateway
+      String apMask;                    // Client network mask
+      String apPdns;                    // Client primary DNS
+      String apSdns;                    // Client secondary DNS
     };
     apCredentials_t apList[WIFIMANAGER_MAX_APS];  // Stored AP list
 

@@ -212,6 +212,10 @@ void WIFIMANAGER::clearApList() {
   for(uint8_t i=0; i<WIFIMANAGER_MAX_APS; i++) {
     apList[i].apName = "";
     apList[i].apPass = "";
+    apList[i].apAddr = "";
+    apList[i].apGate = "";
+    apList[i].apMask = "";
+    apList[i].apDnsP = "";
   }
 }
 
@@ -232,9 +236,24 @@ bool WIFIMANAGER::loadFromNVS() {
         if (apName.length() > 0) {
           sprintf(tmpKey, "apPass%d", i);
           String apPass = preferences.getString(tmpKey);
+          sprintf(tmpKey, "apAddr%d", i);
+          String apAddr = preferences.getString(tmpKey);
+          sprintf(tmpKey, "apGate%d", i);
+          String apGate = preferences.getString(tmpKey);
+          sprintf(tmpKey, "apMask%d", i);
+          String apMask = preferences.getString(tmpKey);
+          sprintf(tmpKey, "apPdns%d", i);
+          String apPdns = preferences.getString(tmpKey);
+          sprintf(tmpKey, "apSdns%d", i);
+          String apSdns = preferences.getString(tmpKey);
           logMessage(String("[WIFI] Load SSID '") + apName + "' to " + String(i+1) + ". slot.\n");
           apList[i].apName = apName;
           apList[i].apPass = apPass;
+          apList[i].apAddr = apAddr;
+          apList[i].apGate = apGate;
+          apList[i].apMask = apMask;
+          apList[i].apPdns = apPdns;
+          apList[i].apSdns = apSdns;
           configuredSSIDs++;
         }
       }
@@ -267,6 +286,21 @@ bool WIFIMANAGER::writeToNVS() {
 
     snprintf(tmpKey, sizeof(tmpKey), "apPass%d", i);
     preferences.putString(tmpKey, apList[i].apPass);
+
+    snprintf(tmpKey, sizeof(tmpKey), "apAddr%d", i);
+    preferences.putString(tmpKey, apList[i].apAddr);
+
+    snprintf(tmpKey, sizeof(tmpKey), "apGate%d", i);
+    preferences.putString(tmpKey, apList[i].apGate);
+
+    snprintf(tmpKey, sizeof(tmpKey), "apMask%d", i);
+    preferences.putString(tmpKey, apList[i].apMask);
+
+    snprintf(tmpKey, sizeof(tmpKey), "apPdns%d", i);
+    preferences.putString(tmpKey, apList[i].apPdns);
+
+    snprintf(tmpKey, sizeof(tmpKey), "apSdns%d", i);
+    preferences.putString(tmpKey, apList[i].apSdns);
   }
 
   preferences.end();
@@ -281,7 +315,7 @@ bool WIFIMANAGER::writeToNVS() {
  * @return true on success
  * @return false on failure
  */
-bool WIFIMANAGER::addWifi(String apName, String apPass, bool updateNVS) {
+bool WIFIMANAGER::addWifi(String apName, String apPass, String apAddr, String apGate, String apMask, String apPdns, String apSdns, bool updateNVS) {
   if(apName.length() < 1 || apName.length() > 31) {
     logMessage("[WIFI] No SSID given or ssid too long");
     return false;
@@ -297,6 +331,11 @@ bool WIFIMANAGER::addWifi(String apName, String apPass, bool updateNVS) {
       logMessage(String("[WIFI] Found unused slot Nr. ") + String(i) + " to store the new SSID '" + apName + "' credentials.\n");
       apList[i].apName = apName;
       apList[i].apPass = apPass;
+      apList[i].apAddr = apAddr;
+      apList[i].apGate = apGate;
+      apList[i].apMask = apMask;
+      apList[i].apPdns = apPdns;
+      apList[i].apSdns = apSdns;
       configuredSSIDs++;
       if (updateNVS) return writeToNVS();
       else return true;
@@ -316,6 +355,11 @@ bool WIFIMANAGER::delWifi(uint8_t apId) {
   if (apId < WIFIMANAGER_MAX_APS) {
     apList[apId].apName.clear();
     apList[apId].apPass.clear();
+    apList[apId].apAddr.clear();
+    apList[apId].apGate.clear();
+    apList[apId].apMask.clear();
+    apList[apId].apPdns.clear();
+    apList[apId].apSdns.clear();
     return writeToNVS();
   }
   return false;
@@ -903,6 +947,11 @@ void WIFIMANAGER::attachWebServer(AsyncWebServer * srv) {
 
     String apName = jsonBuffer["apName"].as<String>();
     String apPass = jsonBuffer["apPass"].as<String>();
+    String apAddr = jsonBuffer["apAddr"].as<String>();
+    String apGate = jsonBuffer["apGate"].as<String>();
+    String apMask = jsonBuffer["apMask"].as<String>();
+    String apPdns = jsonBuffer["apPdns"].as<String>();
+    String apSdns = jsonBuffer["apSdns"].as<String>();
 
     // Validate SSID length (WiFi standard: 1-32 bytes, ESP32 uses 1-31)
     if (apName.length() < 1 || apName.length() > 31) {
@@ -919,8 +968,18 @@ void WIFIMANAGER::attachWebServer(AsyncWebServer * srv) {
     // Input sanitization - remove dangerous characters
     apName.replace('\0', ' ');
     apPass.replace('\0', ' ');
+    apAddr.replace('\0', ' ');
+    apGate.replace('\0', ' ');
+    apMask.replace('\0', ' ');
+    apPdns.replace('\0', ' ');
+    apSdns.replace('\0', ' ');
     apName.trim();
     apPass.trim();
+    apAddr.trim();
+    apGate.trim();
+    apMask.trim();
+    apPdns.trim();
+    apSdns.trim();
 
     // Final validation after sanitization
     if (apName.length() == 0) {
@@ -929,7 +988,7 @@ void WIFIMANAGER::attachWebServer(AsyncWebServer * srv) {
       return;
     }
 
-    if (!addWifi(apName, apPass)) {
+    if (!addWifi(apName, apPass, apAddr, apGate, apMask, apPdns, apSdns)) {
       request->send(500, "application/json", "{\"error\":\"Unable to add WiFi network - storage full or duplicate entry\"}");
     } else {
       request->send(200, "application/json", "{\"message\":\"WiFi network added successfully\"}");
@@ -1414,6 +1473,21 @@ void WIFIMANAGER::attachUI() {
                     <button type="button" class="password-toggle" onclick="togglePasswordVisibility()" id="passwordToggle">👁️</button>
                 </div>
                 
+                <label for="apAddr">IP Address:</label>
+                <input type="text" id="apAddr" required>
+
+                <label for="apGate">Gateway:</label>
+                <input type="text" id="apGate" required>
+
+                <label for="apMask">Network Mask:</label>
+                <input type="text" id="apMask" required>
+
+                <label for="apPdns">Primary DNS:</label>
+                <input type="text" id="apPdns" required>
+
+                <label for="apSdns">Secondary DNS:</label>
+                <input type="text" id="apSdns" required>
+
                 <div class="button-group">
                     <button type="button" class="button-secondary" onclick="closeModal()">Cancel</button>
                     <button type="submit">Connect</button>
@@ -1660,6 +1734,11 @@ void WIFIMANAGER::attachUI() {
             event.preventDefault();
             const apName = document.getElementById('apName').value;
             const apPass = document.getElementById('apPass').value;
+            const apAddr = document.getElementById('apAddr').value;
+            const apGate = document.getElementById('apGate').value;
+            const apMask = document.getElementById('apMask').value;
+            const apPdns = document.getElementById('apPdns').value;
+            const apSdns = document.getElementById('apSdns').value;
 
             try {
                 showStatus('Connecting to network...', 'info');
@@ -1668,7 +1747,7 @@ void WIFIMANAGER::attachUI() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ apName, apPass }),
+                    body: JSON.stringify({ apName, apPass, apAddr, apDate, apMask, apPdns, apSdns }),
                 });
 
                 if (!response.ok) throw new Error('Connection failed');
