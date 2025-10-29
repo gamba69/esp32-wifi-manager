@@ -1475,19 +1475,19 @@ void WIFIMANAGER::attachUI() {
                 </div>
                 
                 <label for="apAddr">IP Address:</label>
-                <input type="text" id="apAddr" required>
+                <input type="text" id="apAddr">
 
                 <label for="apGate">Gateway:</label>
-                <input type="text" id="apGate" required>
+                <input type="text" id="apGate">
 
                 <label for="apMask">Network Mask:</label>
-                <input type="text" id="apMask" required>
+                <input type="text" id="apMask">
 
                 <label for="apPdns">Primary DNS:</label>
-                <input type="text" id="apPdns" required>
+                <input type="text" id="apPdns">
 
                 <label for="apSdns">Secondary DNS:</label>
-                <input type="text" id="apSdns" required>
+                <input type="text" id="apSdns">
 
                 <div class="button-group">
                     <button type="button" class="button-secondary" onclick="closeModal()">Cancel</button>
@@ -1748,7 +1748,7 @@ void WIFIMANAGER::attachUI() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ apName, apPass, apAddr, apDate, apMask, apPdns, apSdns }),
+                    body: JSON.stringify({ apName, apPass, apAddr, apGate, apMask, apPdns, apSdns }),
                 });
 
                 if (!response.ok) throw new Error('Connection failed');
