@@ -260,12 +260,18 @@ bool WIFIMANAGER::loadFromNVS() {
                     sprintf(tmpKey, "apMqtt%d", i);
                     String apMqtt = preferences.getString(tmpKey);
                     logMessage(String("[WIFI][LOAD] SSID ") + apName);
-                    apAddr.length() > 0 ? logMessage(String("[WIFI][LOAD] ADDR ") + apAddr) : ;
-                    apGate.length() > 0 ? logMessage(String("[WIFI][LOAD] GATE ") + apGate) : ;
-                    apMask.length() > 0 ? logMessage(String("[WIFI][LOAD] MASK ") + apMask) : ;
-                    apPdns.length() > 0 ? logMessage(String("[WIFI][LOAD] PDNS ") + apPdns) : ;
-                    apSdns.length() > 0 ? logMessage(String("[WIFI][LOAD] SDNS ") + apSdns) : ;
-                    apMqtt.length() > 0 ? logMessage(String("[WIFI][LOAD] MQTT ") + apMqtt) : ;
+                    if (apAddr.length() > 0)
+                        logMessage(String("[WIFI][LOAD] ADDR ") + apAddr);
+                    if (apGate.length() > 0)
+                        logMessage(String("[WIFI][LOAD] GATE ") + apGate);
+                    if (apMask.length() > 0)
+                        logMessage(String("[WIFI][LOAD] MASK ") + apMask);
+                    if (apPdns.length() > 0)
+                        logMessage(String("[WIFI][LOAD] PDNS ") + apPdns);
+                    if (apSdns.length() > 0)
+                        logMessage(String("[WIFI][LOAD] SDNS ") + apSdns);
+                    if (apMqtt.length() > 0)
+                        logMessage(String("[WIFI][LOAD] MQTT ") + apMqtt);
                     logMessage(String("[WIFI][LOAD] To ") + String(i + 1) + " slot.");
                     apList[i].apName = apName;
                     apList[i].apPass = apPass;
