@@ -33,6 +33,8 @@ class WIFIMANAGER {
     uint8_t captivePortalWebHandlerCount = 0;
 
   protected:
+    Stream *logger = &Serial;
+
     AsyncWebServer *webServer; // The Webserver to register routes on
 
     String apiPrefix = "/api/wifi"; // Prefix for all IP endpionts
@@ -75,6 +77,7 @@ class WIFIMANAGER {
 
     // Print a log message to Serial, can be overwritten
     virtual void logMessage(String msg);
+    virtual void logMessagePart(String msg);
 
     void attachCaptivePortal();
     void detachCaptivePortal();
@@ -158,6 +161,9 @@ class WIFIMANAGER {
 
     // Load AP Settings from NVS it known apList
     bool loadFromNVS();
+
+    // Set current logger
+    void setLogger(Stream *stream);
 };
 
 #endif

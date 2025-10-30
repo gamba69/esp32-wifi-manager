@@ -24,7 +24,13 @@ DNSServer dnsServer;
  * enhanced logging.
  */
 void WIFIMANAGER::logMessage(String msg) {
-    Serial.print(msg);
+    logger->println(msg);
+}
+void WIFIMANAGER::logMessagePart(String msg) {
+    logger->print(msg);
+}
+void WIFIMANAGER::setLogger(Stream *stream) {
+    logger = stream;
 }
 
 /**
@@ -92,7 +98,7 @@ void WIFIMANAGER::startBackgroundTask(String softApName, String softApPass) {
     );
 
     if (taskCreated != pdPASS) {
-        logMessage("[ERROR] WifiManager: Error creating Wifi background task\n");
+        logMessage("[ERROR] WifiManager: Error creating Wifi background task");
     }
 
     xTaskCreatePinnedToCore(
@@ -106,7 +112,7 @@ void WIFIMANAGER::startBackgroundTask(String softApName, String softApPass) {
     );
 
     if (taskCreated != pdPASS) {
-        logMessage("[ERROR] WifiManager: Error creating DNS background task\n");
+        logMessage("[ERROR] WifiManager: Error creating DNS background task");
     }
 }
 
@@ -120,12 +126,12 @@ WIFIMANAGER::WIFIMANAGER(const char *ns) {
 
     // AP on/off
     WiFi.onEvent([&](WiFiEvent_t event, WiFiEventInfo_t info) {
-        logMessage("[WIFI][EVENT] AP mode started!\n");
+        logMessage("[WIFI][EVENT] AP mode started!");
     },
                  ARDUINO_EVENT_WIFI_AP_START);
 
     WiFi.onEvent([&](WiFiEvent_t event, WiFiEventInfo_t info) {
-        logMessage("[WIFI][EVENT] AP mode stopped!\n");
+        logMessage("[WIFI][EVENT] AP mode stopped!");
     },
                  ARDUINO_EVENT_WIFI_AP_STOP);
 
@@ -137,7 +143,7 @@ WIFIMANAGER::WIFIMANAGER(const char *ns) {
                    String(info.wifi_ap_staconnected.mac[2], HEX) + ":" +
                    String(info.wifi_ap_staconnected.mac[3], HEX) + ":" +
                    String(info.wifi_ap_staconnected.mac[4], HEX) + ":" +
-                   String(info.wifi_ap_staconnected.mac[5], HEX) + "\n");
+                   String(info.wifi_ap_staconnected.mac[5], HEX));
     },
                  ARDUINO_EVENT_WIFI_AP_STACONNECTED);
 
@@ -148,22 +154,22 @@ WIFIMANAGER::WIFIMANAGER(const char *ns) {
                    String(info.wifi_ap_stadisconnected.mac[2], HEX) + ":" +
                    String(info.wifi_ap_stadisconnected.mac[3], HEX) + ":" +
                    String(info.wifi_ap_stadisconnected.mac[4], HEX) + ":" +
-                   String(info.wifi_ap_stadisconnected.mac[5], HEX) + "\n");
+                   String(info.wifi_ap_stadisconnected.mac[5], HEX));
     },
                  ARDUINO_EVENT_WIFI_AP_STADISCONNECTED);
 
     WiFi.onEvent([&](WiFiEvent_t event, WiFiEventInfo_t info) {
         logMessage("[WIFI][EVENT] *** IP ASSIGNED TO CLIENT: " +
-                   IPAddress(info.wifi_ap_staipassigned.ip.addr).toString() + " ***\n");
+                   IPAddress(info.wifi_ap_staipassigned.ip.addr).toString() + " ***");
     },
                  ARDUINO_EVENT_WIFI_AP_STAIPASSIGNED);
 
     WiFi.onEvent([&](WiFiEvent_t event, WiFiEventInfo_t info) {
-        logMessage("[WIFI][EVENT] Disconnected from STA\n");
+        logMessage("[WIFI][EVENT] Disconnected from STA");
     },
                  ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
     WiFi.onEvent([&](WiFiEvent_t event, WiFiEventInfo_t info) {
-        logMessage("[WIFI][EVENT] Connected to STA\n");
+        logMessage("[WIFI][EVENT] Connected to STA");
     },
                  ARDUINO_EVENT_WIFI_STA_CONNECTED);
 }
@@ -253,7 +259,7 @@ bool WIFIMANAGER::loadFromNVS() {
                     String apSdns = preferences.getString(tmpKey);
                     sprintf(tmpKey, "apMqtt%d", i);
                     String apMqtt = preferences.getString(tmpKey);
-                    logMessage(String("[WIFI] Load SSID '") + apName + ":***:" + apAddr + ":" + apGate + ":" + apMask + ":" + apPdns + ":" + apSdns + ":" + apMqtt + "' to " + String(i + 1) + ". slot.\n");
+                    logMessage(String("[WIFI] Load SSID '") + apName + "/***/" + apAddr + "/" + apGate + "/" + apMask + "/" + apPdns + "/" + apSdns + "/" + apMqtt + "' to " + String(i + 1) + ". slot.");
                     apList[i].apName = apName;
                     apList[i].apPass = apPass;
                     apList[i].apAddr = apAddr;
@@ -269,7 +275,7 @@ bool WIFIMANAGER::loadFromNVS() {
         preferences.end();
         return true;
     }
-    logMessage("[WIFI] Unable to load data from NVS, giving up...\n");
+    logMessage("[WIFI] Unable to load data from NVS, giving up...");
     return false;
 }
 
@@ -340,7 +346,7 @@ bool WIFIMANAGER::addWifi(String apName, String apPass, String apAddr, String ap
 
     for (uint8_t i = 0; i < WIFIMANAGER_MAX_APS; i++) {
         if (apList[i].apName == "") {
-            logMessage(String("[WIFI] Found unused slot Nr. ") + String(i) + " to store the new SSID '" + apName + "' credentials.\n");
+            logMessage(String("[WIFI] Found unused slot Nr. ") + String(i) + " to store the new SSID '" + apName + "' credentials.");
             apList[i].apName = apName;
             apList[i].apPass = apPass;
             apList[i].apAddr = apAddr;
@@ -425,12 +431,12 @@ bool WIFIMANAGER::setMode(wifi_mode_t mode) {
     logMessage("[WIFI] Switching WiFi mode to " + _wifiModeAsString(mode) + " ...");
     while (WiFi.getMode() != mode && millis() - startTime < timeout) {
         delay(10);
-        logMessage(".");
+        logMessagePart(".");
     }
     if (WiFi.getMode() == mode) {
-        logMessage(" success\n");
+        logMessage(" success");
     } else {
-        logMessage(" timeout\n");
+        logMessage(" timeout");
     }
     return true;
 }
@@ -480,8 +486,8 @@ uint8_t WIFIMANAGER::getApEntry() {
         if (apList[i].apName.length())
             return i;
     }
-    logMessage("[WIFI][ERROR] We did not find a valid entry!\n");
-    logMessage("[WIFI][ERROR] Make sure to not call this function if not configuredSSIDs > 0.\n");
+    logMessage("[WIFI][ERROR] We did not find a valid entry!");
+    logMessage("[WIFI][ERROR] Make sure to not call this function if not configuredSSIDs > 0.");
     return WIFIMANAGER_MAX_APS;
 }
 
@@ -506,15 +512,15 @@ void WIFIMANAGER::loop(bool force) {
     lastWifiCheckMillis = millis();
 
     if (WiFi.getMode() == WIFI_AP) {
-        logMessage("[WIFI] Operating in softAP (" + WiFi.softAPIP().toString() + ") mode with " + String(WiFi.softAPgetStationNum()) + " client(s). " + "Next connection attempt in " + String(getSoftApTimeRemaining()) + " seconds\n");
+        logMessage("[WIFI] Operating in softAP (" + WiFi.softAPIP().toString() + ") mode with " + String(WiFi.softAPgetStationNum()) + " client(s). " + "Next connection attempt in " + String(getSoftApTimeRemaining()) + " seconds");
 
         if (getSoftApTimeRemaining() == 0) {
             if (WiFi.softAPgetStationNum() > 0) {
-                logMessage("[WIFI] SoftAP has " + String(WiFi.softAPgetStationNum()) + " clients connected! Resetting timeout\n");
+                logMessage("[WIFI] SoftAP has " + String(WiFi.softAPgetStationNum()) + " clients connected! Resetting timeout");
                 startApTimeMillis = millis(); // reset timeout as someone is connected
                 return;
             }
-            logMessage("[WIFI] Running in softAP mode but timeout reached. Closing softAP!\n");
+            logMessage("[WIFI] Running in softAP mode but timeout reached. Closing softAP!");
             stopSoftAP();
             delay(100);
         }
@@ -523,20 +529,20 @@ void WIFIMANAGER::loop(bool force) {
             // Check if we are connected to a well known SSID
             for (uint8_t i = 0; i < WIFIMANAGER_MAX_APS; i++) {
                 if (WiFi.SSID() == apList[i].apName) {
-                    logMessage(String("[WIFI][STATUS] Connected to known SSID: '") + WiFi.SSID() + "' with IP " + WiFi.localIP().toString() + "\n");
+                    logMessage(String("[WIFI][STATUS] Connected to known SSID: '") + WiFi.SSID() + "' with IP " + WiFi.localIP().toString());
                     return;
                 }
             }
         }
         // looks like we are connected to something else, strange!?
-        logMessage("[WIFI] Connected to an unknown SSID, ignoring. Currently connected to: " + WiFi.SSID() + "\n");
+        logMessage("[WIFI] Connected to an unknown SSID, ignoring. Currently connected to: " + WiFi.SSID());
     } else {
         // let's try to connect to some WiFi in Range
         if (!tryConnect()) {
             if (createFallbackAP)
                 startSoftAP();
             else
-                logMessage("[WIFI] Auto creation of softAP is disabled. SoftAP won't start.\n");
+                logMessage("[WIFI] Auto creation of softAP is disabled. SoftAP won't start.");
         }
     }
 }
@@ -549,14 +555,14 @@ void WIFIMANAGER::loop(bool force) {
  */
 bool WIFIMANAGER::tryConnect() {
     if (!configAvailable()) {
-        logMessage("[WIFI] No SSIDs configured in NVS, unable to connect.\n");
+        logMessage("[WIFI] No SSIDs configured in NVS, unable to connect.");
         if (createFallbackAP)
             startSoftAP();
         return false;
     }
 
     if (WiFi.getMode() == WIFI_AP) {
-        logMessage("[WIFI] SoftAP running with " + String(WiFi.softAPgetStationNum()) + " client(s) connected.\n");
+        logMessage("[WIFI] SoftAP running with " + String(WiFi.softAPgetStationNum()) + " client(s) connected.");
     }
 
     int choosenAp = INT_MIN;
@@ -564,7 +570,7 @@ bool WIFIMANAGER::tryConnect() {
         // only one configured SSID, skip scanning and try to connect to this specific one.
         choosenAp = getApEntry();
     } else {
-        logMessage("[WIFI][CONNECT] Scanning for WIFI networks...\n");
+        logMessage("[WIFI][CONNECT] Scanning for WIFI networks...");
         int8_t scanResult = WiFi.scanNetworks(true, true);
         while (true) {
             scanResult = WiFi.scanComplete();
@@ -574,12 +580,12 @@ bool WIFIMANAGER::tryConnect() {
             }
             if (scanResult <= 0) {
                 setMode(WIFI_OFF); // scan changes mode, but won't return to the last state
-                logMessage("[WIFI][CONNECT] Unable to find WIFI networks in range to this device!\n");
+                logMessage("[WIFI][CONNECT] Unable to find WIFI networks in range to this device!");
                 return false;
             }
             break;
         }
-        logMessage(String("[WIFI][CONNECT] Found ") + String(scanResult) + " networks in range\n");
+        logMessage(String("[WIFI][CONNECT] Found ") + String(scanResult) + " networks in range");
         int choosenRssi = INT_MIN; // we want to select the strongest signal with the highest priority if we have multiple SSIDs available
         for (int8_t x = 0; x < scanResult; ++x) {
             String ssid;
@@ -604,10 +610,10 @@ bool WIFIMANAGER::tryConnect() {
     }
 
     if (choosenAp == INT_MIN) {
-        logMessage("[WIFI][CONNECT] Unable to find an SSID to connect to!\n");
+        logMessage("[WIFI][CONNECT] Unable to find an SSID to connect to!");
         return false;
     } else {
-        logMessage(String("[WIFI][CONNECT] Trying to connect to SSID ") + apList[choosenAp].apName + " " + (apList[choosenAp].apPass.length() > 0 ? "with password '***'" : "without password") + "\n");
+        logMessage(String("[WIFI][CONNECT] Trying to connect to SSID ") + apList[choosenAp].apName + " " + (apList[choosenAp].apPass.length() > 0 ? "with password '***'" : "without password"));
         return tryConnectSpecific(choosenAp);
     }
 }
@@ -619,7 +625,7 @@ bool WIFIMANAGER::tryConnect() {
  */
 bool WIFIMANAGER::tryConnectSpecific(uint8_t networkId) {
     if (networkId >= WIFIMANAGER_MAX_APS) {
-        logMessage("[WIFI][CONNECT] Invalid network ID: " + String(networkId) + "\n");
+        logMessage("[WIFI][CONNECT] Invalid network ID: " + String(networkId));
         return false;
     }
 
@@ -653,37 +659,37 @@ bool WIFIMANAGER::tryConnectSpecific(uint8_t networkId) {
     }
     switch (status) {
     case WL_IDLE_STATUS:
-        logMessage("[WIFI][CONNECT] Connecting failed (0): Idle\n");
+        logMessage("[WIFI][CONNECT] Connecting failed (0): Idle");
         break;
     case WL_NO_SSID_AVAIL:
-        logMessage("[WIFI][CONNECT] Connecting failed (1): The AP can't be found\n");
+        logMessage("[WIFI][CONNECT] Connecting failed (1): The AP can't be found");
         break;
     case WL_SCAN_COMPLETED:
-        logMessage("[WIFI][CONNECT] Connecting failed (2): Scan completed\n");
+        logMessage("[WIFI][CONNECT] Connecting failed (2): Scan completed");
         break;
     case WL_CONNECTED: // 3
-        logMessage("[WIFI][CONNECT] Connection successful\n");
-        logMessage("[WIFI][CONNECT] SSID   : " + WiFi.SSID() + "\n");
-        logMessage("[WIFI][CONNECT] IP     : " + WiFi.localIP().toString() + "\n");
-        logMessage("[WIFI][CONNECT] Gateway: " + WiFi.gatewayIP().toString() + "\n");
-        logMessage("[WIFI][CONNECT] Subnet : " + WiFi.subnetMask().toString() + "\n");
-        logMessage("[WIFI][CONNECT] WebServer should be accessible at http://" + WiFi.localIP().toString() + "/wifi\n");
+        logMessage("[WIFI][CONNECT] Connection successful");
+        logMessage("[WIFI][CONNECT] SSID   : " + WiFi.SSID());
+        logMessage("[WIFI][CONNECT] IP     : " + WiFi.localIP().toString());
+        logMessage("[WIFI][CONNECT] Gateway: " + WiFi.gatewayIP().toString());
+        logMessage("[WIFI][CONNECT] Subnet : " + WiFi.subnetMask().toString());
+        logMessage("[WIFI][CONNECT] WebServer should be accessible at http://" + WiFi.localIP().toString() + "/wifi");
         return true;
         break;
     case WL_CONNECT_FAILED:
-        logMessage("[WIFI][CONNECT] Connecting failed (4): Unknown reason\n");
+        logMessage("[WIFI][CONNECT] Connecting failed (4): Unknown reason");
         break;
     case WL_CONNECTION_LOST:
-        logMessage("[WIFI][CONNECT] Connecting failed (5): Connection lost\n");
+        logMessage("[WIFI][CONNECT] Connecting failed (5): Connection lost");
         break;
     case WL_DISCONNECTED:
-        logMessage("[WIFI][CONNECT] Connecting failed (6): Disconnected\n");
+        logMessage("[WIFI][CONNECT] Connecting failed (6): Disconnected");
         break;
     case WL_NO_SHIELD:
-        logMessage("[WIFI][CONNECT] Connecting failed (7): No Wifi shield found\n");
+        logMessage("[WIFI][CONNECT] Connecting failed (7): No Wifi shield found");
         break;
     default:
-        logMessage("[WIFI][CONNECT] Connecting failed (" + String(status) + "): Unknown status code\n");
+        logMessage("[WIFI][CONNECT] Connecting failed (" + String(status) + "): Unknown status code");
         break;
     }
     // clean up IP config after failed connection to avoid issues with softAp detection
@@ -714,7 +720,7 @@ bool WIFIMANAGER::startSoftAP(String apName, String apPass) {
 
     if (this->softApName == "")
         this->softApName = "ESP_" + String((uint32_t)ESP.getEfuseMac());
-    logMessage("[WIFI] Starting configuration portal on AP SSID " + this->softApName + "\n");
+    logMessage("[WIFI] Starting configuration portal on AP SSID " + this->softApName);
 
     // setMode(WIFI_AP); // done by WiFi.softAP
     bool state = WiFi.softAP(this->softApName.c_str(), (this->softApPass.length() ? this->softApPass.c_str() : NULL));
@@ -725,7 +731,7 @@ bool WIFIMANAGER::startSoftAP(String apName, String apPass) {
 
         // Start DNS server with better error handling
         if (!dnsServer.start(53, "*", WiFi.softAPIP())) {
-            logMessage("[WIFI] DNS server failed to start, retrying...\n");
+            logMessage("[WIFI] DNS server failed to start, retrying...");
             delay(200);
             dnsServer.start(53, "*", WiFi.softAPIP());
         }
@@ -735,25 +741,25 @@ bool WIFIMANAGER::startSoftAP(String apName, String apPass) {
 
         attachCaptivePortal();
 
-        logMessage("[WIFI][SOFTAP] SoftAP successfully started\n");
-        logMessage("[WIFI][SOFTAP] SSID:        " + this->softApName + "\n");
-        logMessage(String("[WIFI][SOFTAP] Password:    ") + (this->softApPass.length() > 0 ? "***" : "OPEN") + "\n");
-        logMessage("[WIFI][SOFTAP] IP Address:  " + WiFi.softAPIP().toString() + "\n");
-        logMessage("[WIFI][SOFTAP] IP Subnet:   " + WiFi.softAPSubnetMask().toString() + "\n");
-        logMessage("[WIFI][SOFTAP] MAC Address: " + WiFi.softAPmacAddress() + "\n");
-        logMessage("[WIFI][SOFTAP] Channel:     " + String(WiFi.channel()) + "\n");
-        logMessage(String("[WIFI][SOFTAP] Encryption:  ") + (this->softApPass.length() > 0 ? "WPA2" : "OPEN") + "\n");
-        logMessage("[WIFI][SOFTAP] WiFi Power:  " + String(WiFi.getTxPower()) + " dBm\n");
-        logMessage("[WIFI][SOFTAP] WiFi Mode:   " + String(WiFi.getMode()) + " (1=STA, 2=AP, 3=AP_STA)\n");
+        logMessage("[WIFI][SOFTAP] SoftAP successfully started");
+        logMessage("[WIFI][SOFTAP] SSID:        " + this->softApName);
+        logMessage(String("[WIFI][SOFTAP] Password:    ") + (this->softApPass.length() > 0 ? "***" : "OPEN"));
+        logMessage("[WIFI][SOFTAP] IP Address:  " + WiFi.softAPIP().toString());
+        logMessage("[WIFI][SOFTAP] IP Subnet:   " + WiFi.softAPSubnetMask().toString());
+        logMessage("[WIFI][SOFTAP] MAC Address: " + WiFi.softAPmacAddress());
+        logMessage("[WIFI][SOFTAP] Channel:     " + String(WiFi.channel()));
+        logMessage(String("[WIFI][SOFTAP] Encryption:  ") + (this->softApPass.length() > 0 ? "WPA2" : "OPEN"));
+        logMessage("[WIFI][SOFTAP] WiFi Power:  " + String(WiFi.getTxPower()) + " dBm");
+        logMessage("[WIFI][SOFTAP] WiFi Mode:   " + String(WiFi.getMode()) + " (1=STA, 2=AP, 3=AP_STA)");
 
         if (configAvailable()) {
-            logMessage("[WIFI][SOFTAP] Will timeout in " + String(timeoutApMillis / 1000) + " seconds if no clients connect (saved networks available)\n");
+            logMessage("[WIFI][SOFTAP] Will timeout in " + String(timeoutApMillis / 1000) + " seconds if no clients connect (saved networks available)");
         } else {
-            logMessage("[WIFI][SOFTAP] Will run indefinitely (no saved networks configured)\n");
+            logMessage("[WIFI][SOFTAP] Will run indefinitely (no saved networks configured)");
         }
         return true;
     } else {
-        logMessage("[WIFI] Unable to create softAP!\n");
+        logMessage("[WIFI] Unable to create softAP!");
         return false;
     }
 }
@@ -771,7 +777,7 @@ void WIFIMANAGER::stopSoftAP() {
     setMode(WIFI_OFF);
 
     delay(500); // Give more time for interface to shut down completely
-    logMessage("[WIFI] SoftAP stopped and DNS server deactivated\n");
+    logMessage("[WIFI] SoftAP stopped and DNS server deactivated");
 }
 
 /**
@@ -803,7 +809,7 @@ void WIFIMANAGER::stopWifi(bool killTask) {
 void WIFIMANAGER::attachCaptivePortal() {
     // Check if webServer is initialized before registering handlers
     if (webServer == nullptr) {
-        logMessage("[WIFI][WARNING] WebServer not initialized yet, skipping captive portal registration\n");
+        logMessage("[WIFI][WARNING] WebServer not initialized yet, skipping captive portal registration");
         return;
     }
 
@@ -815,7 +821,7 @@ void WIFIMANAGER::attachCaptivePortal() {
         captivePortalWebHandlers[captivePortalWebHandlerCount++] = &webServer->on("/generate_204", HTTP_GET, [&](AsyncWebServerRequest *request) {
             String host = request->hasHeader("Host") ? request->getHeader("Host")->value() : "unknown";
             String userAgent = request->hasHeader("User-Agent") ? request->getHeader("User-Agent")->value() : "unknown";
-            logMessage("[WIFI][CAPTIVE] Android captive portal detection: /generate_204 from host: " + host + ", User-Agent: " + userAgent + "\n");
+            logMessage("[WIFI][CAPTIVE] Android captive portal detection: /generate_204 from host: " + host + ", User-Agent: " + userAgent);
 
             // Check if this is an Android connectivity check - if so, redirect to trigger captive portal
             if (host.indexOf("connectivitycheck") >= 0 ||
@@ -825,17 +831,17 @@ void WIFIMANAGER::attachCaptivePortal() {
 
                 // Samsung devices need 200 + HTML meta-refresh instead of 302 redirect
                 if (userAgent.indexOf("Samsung") >= 0 || userAgent.indexOf("SM-") >= 0 || userAgent.indexOf("GT-") >= 0) {
-                    logMessage("[WIFI][CAPTIVE] Samsung device detected - sending 200 + HTML meta-refresh\n");
+                    logMessage("[WIFI][CAPTIVE] Samsung device detected - sending 200 + HTML meta-refresh");
                     String htmlResponse = "<html><head><title>Redirecting</title><meta http-equiv='refresh' content='0; url=" + uiPrefix + "'></head><body>Please wait, redirecting to WiFi setup...<br><a href='" + uiPrefix + "'>Click here if not redirected</a></body></html>";
                     request->send(200, "text/html", htmlResponse);
                     return;
                 } else {
-                    logMessage("[WIFI][CAPTIVE] Standard Android device - sending 302 redirect\n");
+                    logMessage("[WIFI][CAPTIVE] Standard Android device - sending 302 redirect");
                     request->redirect(uiPrefix.c_str());
                     return;
                 }
             } else {
-                logMessage("[WIFI][CAPTIVE] Android device using host (" + host + ") not detected - sending 204\n");
+                logMessage("[WIFI][CAPTIVE] Android device using host (" + host + ") not detected - sending 204");
             }
 
             // For other requests, send 204 (compatibility)
@@ -845,7 +851,7 @@ void WIFIMANAGER::attachCaptivePortal() {
 
     if (captivePortalWebHandlerCount < CAPTIVEPORTAL_MAX_HANDLERS) {
         captivePortalWebHandlers[captivePortalWebHandlerCount++] = &webServer->on("/gen_204", HTTP_GET, [&](AsyncWebServerRequest *request) {
-            logMessage("[WIFI][CAPTIVE] Android captive portal detection: /gen_204\n");
+            logMessage("[WIFI][CAPTIVE] Android captive portal detection: /gen_204");
             request->send(204); // Alternative Android endpoint expects 204 No Content (Fallback URL of older devices)
         });
     }
@@ -853,7 +859,7 @@ void WIFIMANAGER::attachCaptivePortal() {
     // Microsoft Captive Portal Detection
     if (captivePortalWebHandlerCount < CAPTIVEPORTAL_MAX_HANDLERS) {
         captivePortalWebHandlers[captivePortalWebHandlerCount++] = &webServer->on("/fwlink", HTTP_GET, [&](AsyncWebServerRequest *request) {
-            logMessage("[WIFI][CAPTIVE] Microsoft captive portal detection: /connecttest.txt\n");
+            logMessage("[WIFI][CAPTIVE] Microsoft captive portal detection: /connecttest.txt");
             request->redirect(uiPrefix.c_str());
         });
     }
@@ -861,7 +867,7 @@ void WIFIMANAGER::attachCaptivePortal() {
     // Windows Captive Portal Detection
     if (captivePortalWebHandlerCount < CAPTIVEPORTAL_MAX_HANDLERS) {
         captivePortalWebHandlers[captivePortalWebHandlerCount++] = &webServer->on("/connecttest.txt", HTTP_GET, [&](AsyncWebServerRequest *request) {
-            logMessage("[WIFI][CAPTIVE] Windows captive portal detection: /connecttest.txt\n");
+            logMessage("[WIFI][CAPTIVE] Windows captive portal detection: /connecttest.txt");
             request->redirect(uiPrefix.c_str());
         });
     }
@@ -869,7 +875,7 @@ void WIFIMANAGER::attachCaptivePortal() {
     // iOS Captive Portal Detection
     if (captivePortalWebHandlerCount < CAPTIVEPORTAL_MAX_HANDLERS) {
         captivePortalWebHandlers[captivePortalWebHandlerCount++] = &webServer->on("/hotspot-detect.html", HTTP_GET, [&](AsyncWebServerRequest *request) {
-            logMessage("[WIFI][CAPTIVE] iOS captive portal detection: /hotspot-detect.html\n");
+            logMessage("[WIFI][CAPTIVE] iOS captive portal detection: /hotspot-detect.html");
             request->redirect(uiPrefix.c_str());
         });
     }
@@ -877,7 +883,7 @@ void WIFIMANAGER::attachCaptivePortal() {
     // Ubuntu/Linux Captive Portal Detection
     if (captivePortalWebHandlerCount < CAPTIVEPORTAL_MAX_HANDLERS) {
         captivePortalWebHandlers[captivePortalWebHandlerCount++] = &webServer->on("/connectivity-check", HTTP_GET, [&](AsyncWebServerRequest *request) {
-            logMessage("[WIFI][CAPTIVE] Ubuntu captive portal detection: /connectivity-check\n");
+            logMessage("[WIFI][CAPTIVE] Ubuntu captive portal detection: /connectivity-check");
             request->redirect(uiPrefix.c_str());
         });
     }
@@ -893,7 +899,7 @@ void WIFIMANAGER::attachCaptivePortal() {
             return;
         }
 
-        logMessage("[WIFI][CAPTIVE] Captive portal catch-all: " + host + url + "\n");
+        logMessage("[WIFI][CAPTIVE] Captive portal catch-all: " + host + url);
         request->redirect("http://" + WiFi.softAPIP().toString() + "/" + uiPrefix.c_str(), 302);
     });
 }
@@ -901,12 +907,12 @@ void WIFIMANAGER::attachCaptivePortal() {
 void WIFIMANAGER::detachCaptivePortal() {
     // Only remove captive portal detection handlers, keep UI and API handlers
     for (int i = 0; i < captivePortalWebHandlerCount; i++) {
-        logMessage("[WIFI] Removing Captive Portal handler: #" + String(i) + "\n");
+        logMessage("[WIFI] Removing Captive Portal handler: #" + String(i));
         webServer->removeHandler(captivePortalWebHandlers[i]);
     }
     captivePortalWebHandlerCount = 0;
     // Note: UI and API handlers remain active for WiFi-connected access
-    logMessage("[WIFI] Captive Portal handlers removed, UI/API remain available\n");
+    logMessage("[WIFI] Captive Portal handlers removed, UI/API remain available");
 }
 
 /**
@@ -916,7 +922,7 @@ void WIFIMANAGER::detachCaptivePortal() {
  */
 void WIFIMANAGER::detachWebServer() {
     for (int i = 0; i < apiWebHandlerCount; i++) {
-        logMessage("[WIFI] Removing WebServer handler: API#" + String(i) + "\n");
+        logMessage("[WIFI] Removing WebServer handler: API#" + String(i));
         webServer->removeHandler(apiWebHandlers[i]);
     }
     apiWebHandlerCount = 0;
@@ -938,7 +944,7 @@ void WIFIMANAGER::attachWebServer(AsyncWebServer *srv) {
 
     // If SoftAP is already running, register captive portal handlers now
     if (WiFi.getMode() == WIFI_AP && dnsServerActive) {
-        logMessage("[WIFI] Registering captive portal handlers for existing SoftAP\n");
+        logMessage("[WIFI] Registering captive portal handlers for existing SoftAP");
         attachCaptivePortal();
     }
 
@@ -1235,12 +1241,12 @@ void WIFIMANAGER::attachWebServer(AsyncWebServer *srv) {
                                                               request->send(200, "application/json", "{\"message\":\"Connecting to " + networkName + "\"}");
                                                               yield();
 
-                                                              logMessage("[WIFI][API] Starting direct specific connection attempt\n");
+                                                              logMessage("[WIFI][API] Starting direct specific connection attempt");
                                                               bool connectionResult = tryConnectSpecific(networkId);
                                                               if (connectionResult) {
-                                                                  logMessage("[WIFI][API] Direct connection successful to " + networkName + "\n");
+                                                                  logMessage("[WIFI][API] Direct connection successful to " + networkName);
                                                               } else {
-                                                                  logMessage("[WIFI][API] Direct connection to " + networkName + " failed, resuming normal WiFi management\n");
+                                                                  logMessage("[WIFI][API] Direct connection to " + networkName + " failed, resuming normal WiFi management");
                                                               }
                                                           });
 }
@@ -1252,7 +1258,7 @@ void WIFIMANAGER::attachWebServer(AsyncWebServer *srv) {
  */
 void WIFIMANAGER::detachUI() {
     for (int i = 0; i < uiWebHandlerCount; i++) {
-        logMessage("[WIFI] Removing WebServer handler: UI#" + String(i) + "\n");
+        logMessage("[WIFI] Removing WebServer handler: UI#" + String(i));
         webServer->removeHandler(uiWebHandlers[i]);
     }
     uiWebHandlerCount = 0;
