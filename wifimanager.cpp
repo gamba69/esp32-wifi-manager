@@ -23,14 +23,23 @@ DNSServer dnsServer;
  * to the serial console. It can be overwritten by a custom implementation for
  * enhanced logging.
  */
-void WIFIMANAGER::logMessage(String msg) {
+void WIFIMANAGER::logMessage(String msg, bool showtime) {
+    if(logtime && showtime) {
+        logger->print(logtime() + " ");
+    }
     logger->println(msg);
 }
-void WIFIMANAGER::logMessagePart(String msg) {
+
+void WIFIMANAGER::logMessagePart(String msg, bool showtime) {
+    if(logtime && showtime) {
+        logger->print(logtime() + " ");
+    }
     logger->print(msg);
 }
-void WIFIMANAGER::setLogger(Stream *stream) {
+
+void WIFIMANAGER::setLogger(Stream *stream, std::function<String()> function) {
     logger = stream;
+    logtime = function;
 }
 
 /**

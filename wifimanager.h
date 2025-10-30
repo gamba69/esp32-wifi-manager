@@ -34,6 +34,7 @@ class WIFIMANAGER {
 
   protected:
     Stream *logger = &Serial;
+    std::function<String()> logtime = NULL;
 
     AsyncWebServer *webServer; // The Webserver to register routes on
 
@@ -75,9 +76,9 @@ class WIFIMANAGER {
     // Get id of the first non empty entry
     uint8_t getApEntry();
 
-    // Print a log message to Serial, can be overwritten
-    virtual void logMessage(String msg);
-    virtual void logMessagePart(String msg);
+    // Print a log message, can be overwritten
+    virtual void logMessage(String msg, bool showtime = true);
+    virtual void logMessagePart(String msg, bool showtime = false);
 
     void attachCaptivePortal();
     void detachCaptivePortal();
