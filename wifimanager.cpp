@@ -259,7 +259,14 @@ bool WIFIMANAGER::loadFromNVS() {
                     String apSdns = preferences.getString(tmpKey);
                     sprintf(tmpKey, "apMqtt%d", i);
                     String apMqtt = preferences.getString(tmpKey);
-                    logMessage(String("[WIFI] Load SSID '") + apName + "/***/" + apAddr + "/" + apGate + "/" + apMask + "/" + apPdns + "/" + apSdns + "/" + apMqtt + "' to " + String(i + 1) + ". slot.");
+                    logMessage(String("[WIFI] Load SSID: ") + apName);
+                    logMessage(String("            ADDR: ") + apAddr);
+                    logMessage(String("            GATE: ") + apGate);
+                    logMessage(String("            MASK: ") + apMask);
+                    logMessage(String("            PDNS: ") + apPdns);
+                    logMessage(String("            SDNS: ") + apSdns);
+                    logMessage(String("            MQTT: ") + apMqtt);
+                    logMessage(String("               to ") + String(i + 1) + ". slot.");
                     apList[i].apName = apName;
                     apList[i].apPass = apPass;
                     apList[i].apAddr = apAddr;
