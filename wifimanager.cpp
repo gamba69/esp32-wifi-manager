@@ -37,8 +37,8 @@ void WIFIMANAGER::logMessagePart(String msg, bool showtime) {
     logger->print(msg);
 }
 
-void WIFIMANAGER::setLogger(Stream *stream, std::function<String()> function) {
-    logger = stream;
+void WIFIMANAGER::setLogger(Print *print, std::function<String()> function) {
+    logger = print;
     logtime = function;
 }
 
