@@ -435,7 +435,7 @@ bool WIFIMANAGER::setMode(wifi_mode_t mode) {
     unsigned long startTime = millis();
     const unsigned long timeout = 10000; // 10 Sekunden
 
-    logMessage("[WIFI] Switching WiFi mode to " + _wifiModeAsString(mode) + " ...");
+    logMessagePart("[WIFI] Switching WiFi mode to " + _wifiModeAsString(mode) + " ...");
     while (WiFi.getMode() != mode && millis() - startTime < timeout) {
         delay(10);
         logMessagePart(".");
