@@ -164,7 +164,7 @@ class WIFIMANAGER {
     bool loadFromNVS();
 
     // Set current logger
-    void setLogger(Stream *stream);
+    void setLogger(Stream *stream, std::function<String()> logtime = NULL);
 };
 
 #endif
