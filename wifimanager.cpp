@@ -927,7 +927,7 @@ void WIFIMANAGER::attachCaptivePortal() {
         }
 
         logMessage("[WIFI][CAPTIVE] Captive portal catch-all: " + host + url);
-        request->redirect("http://" + WiFi.softAPIP().toString() + uiPrefix.c_str(), 302);
+        request->redirect("http://" + WiFi.softAPIP().toString() + "/" + uiPrefix.c_str(), 302);
     });
 }
 
