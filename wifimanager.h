@@ -33,8 +33,12 @@ class WIFIMANAGER {
     uint8_t captivePortalWebHandlerCount = 0;
 
   protected:
-    Print *logger = &Serial;
-    std::function<String()> logtime = NULL;
+    // Logger println
+    std::function<void(String)> logLine = NULL;
+    // Logger print
+    std::function<void(String)> logLinePart = NULL;
+    // Logger time function
+    std::function<String()> logTime = NULL;
 
     AsyncWebServer *webServer; // The Webserver to register routes on
 
@@ -164,7 +168,7 @@ class WIFIMANAGER {
     bool loadFromNVS();
 
     // Set current logger
-    void setLogger(Print *print, std::function<String()> logtime = NULL);
+    void setLogger(std::function<void(String)> logLineCallback = NULL, std::function<void(String)> logLinePartCallback = NULL, std::function<String()> logTimeCallback = NULL);
 };
 
 #endif

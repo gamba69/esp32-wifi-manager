@@ -24,22 +24,27 @@ DNSServer dnsServer;
  * enhanced logging.
  */
 void WIFIMANAGER::logMessage(String msg, bool showtime) {
-    if(logtime && showtime) {
-        logger->print(logtime() + " ");
+    if (logLine && logLinePart) {
+        if (logTime && showtime) {
+            logLinePart(logTime() + " ");
+        }
+        logLine(msg);
     }
-    logger->println(msg);
 }
 
 void WIFIMANAGER::logMessagePart(String msg, bool showtime) {
-    if(logtime && showtime) {
-        logger->print(logtime() + " ");
+    if (logLinePart) {
+        if (logTime && showtime) {
+            logLinePart(logTime() + " ");
+        }
+        logLinePart(msg);
     }
-    logger->print(msg);
 }
 
-void WIFIMANAGER::setLogger(Print *print, std::function<String()> function) {
-    logger = print;
-    logtime = function;
+void WIFIMANAGER::setLogger(std::function<void(String)> logLineCallback, std::function<void(String)> logLinePartCallback, std::function<String()> logTimeCallback) {
+    logLine = logLineCallback;
+    logLinePart = logLinePartCallback;
+    logTime = logTimeCallback;
 }
 
 /**
