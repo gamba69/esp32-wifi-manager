@@ -47,6 +47,22 @@ void WIFIMANAGER::setLogger(std::function<void(String)> logLineCallback, std::fu
     logTime = logTimeCallback;
 }
 
+String WIFIMANAGER::getSettings(String name) {
+    if (WiFi.getMode() == WIFI_STA) {
+        if (WiFi.waitForConnectResult() == WL_CONNECTED && !WiFi.SSID().isEmpty()) {
+            for (uint8_t i = 0; i < WIFIMANAGER_MAX_APS; i++) {
+                if (WiFi.SSID() == apList[i].apName) {
+                    switch (name) {
+                    case "mqtt":
+                        return apList[i].apMqtt;
+                    }
+                }
+            }
+        }
+    }
+    return "";
+}
+
 /**
  * @brief Background Task running as a loop forever
  * @param param needs to be a valid WIFIMANAGER instance
