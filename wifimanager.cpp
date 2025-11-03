@@ -52,8 +52,7 @@ String WIFIMANAGER::getSettings(String name) {
         if (WiFi.waitForConnectResult() == WL_CONNECTED && !WiFi.SSID().isEmpty()) {
             for (uint8_t i = 0; i < WIFIMANAGER_MAX_APS; i++) {
                 if (WiFi.SSID() == apList[i].apName) {
-                    switch (name) {
-                    case "mqtt":
+                    if(name.equalsIgnoreCase("mqtt")) {
                         return apList[i].apMqtt;
                     }
                 }
