@@ -170,6 +170,7 @@ class WIFIMANAGER {
     // Set current logger
     void setLogger(std::function<void(String)> logLineCallback = NULL, std::function<void(String)> logLinePartCallback = NULL, std::function<String()> logTimeCallback = NULL);
 
+    // Get specified AP settings
     String getSettings(String name);
 };
 
